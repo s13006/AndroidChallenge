@@ -72,7 +72,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
         squares = Tetrimino.CreateTetrimino(r , posX , posY);
     }
 
-    public static boolean Check(int mvX,int mvY){
+    public static boolean Check(int[][] squares,int mvX,int mvY){
         if(squares[mvX + (posX - mvX)][mvY + (posY - mvY)] != 0){
             return false;
         }
@@ -82,22 +82,31 @@ public class Board extends View implements GestureDetector.OnGestureListener{
     public static void mvDownBlock(){
     }
     public static void mvRightBlock(){
-        posX++;
-        if (Check(posX,posY)) {
-            int r = squares[posX][posY] - 1;
-            createBlock(r, posX, posY);
-        }else{
+        int r = squares[posX][posY] - 1;
+        try {
+            posX++;
+            if (Check(squares, posX, posY)) {
+                createBlock(r, posX, posY);
+            } else {
+                posX--;
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
             posX--;
+            createBlock(r,posX,posY);
         }
         Log.v("test","bbb");
 
     }
     public static void mvLeftBlock(){
-        posX--;
-        if (Check(posX,posY)) {
-            int r = squares[posX][posY] - 1;
-            createBlock(r, posX, posY);
-        }else{
+        int r = squares[posX][posY] - 1;
+        try {
+            posX--;
+            if (Check(squares, posX, posY)) {
+                createBlock(r, posX, posY);
+            } else {
+                posX++;
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
             posX++;
         }
         Log.v("test","aaa");
