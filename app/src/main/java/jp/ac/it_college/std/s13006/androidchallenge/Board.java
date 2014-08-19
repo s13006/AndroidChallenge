@@ -8,6 +8,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Board extends View implements GestureDetector.OnGestureListener{
@@ -16,25 +18,26 @@ public class Board extends View implements GestureDetector.OnGestureListener{
     private static final int HORIZONTAL_BLOCKS = 10;
     private static final int VERTICAL_BLOCKS = 20;
     static int[][] squares;
-    static int posX = Tetrimino.posX;
-    static int posY = Tetrimino.posY;
     private Block[] blocks;
     private GestureDetector gd;
-
+    public static List<Integer> CurrentX = new ArrayList<Integer>();
+    public static List<Integer> CurrentY = new ArrayList<Integer>();
 
     {
         float density = getResources().getDisplayMetrics().density;
         float wp = getResources().getDisplayMetrics().widthPixels;
         mSize = (wp - 10 * density) * 2 / 3 / HORIZONTAL_BLOCKS;
-        blocks = new Block[Tetrimino.KINDS + 1];
+        blocks = new Block[Tetrimino.KINDS + 2];
         blocks[0] = new Block(mSize, Color.BLACK, Color.LTGRAY);
-        blocks[1] = new Block(mSize, Color.CYAN, Color.BLACK);
-        blocks[2] = new Block(mSize, Color.YELLOW, Color.BLACK);
-        blocks[3] = new Block(mSize, Color.GREEN, Color.BLACK);
-        blocks[4] = new Block(mSize, Color.RED, Color.BLACK);
-        blocks[5] = new Block(mSize, Color.BLUE, Color.BLACK);
-        blocks[6] = new Block(mSize, 0xfff08000, Color.BLACK);
-        blocks[7] = new Block(mSize, 0xff800080, Color.BLACK);
+        blocks[1] = new Block(mSize, Color.LTGRAY, Color.BLACK);
+        blocks[2] = new Block(mSize, Color.CYAN, Color.BLACK);
+        blocks[3] = new Block(mSize, Color.YELLOW, Color.BLACK);
+        blocks[4] = new Block(mSize, Color.GREEN, Color.BLACK);
+        blocks[5] = new Block(mSize, Color.RED, Color.BLACK);
+        blocks[6] = new Block(mSize, Color.BLUE, Color.BLACK);
+        blocks[7] = new Block(mSize, 0xfff08000, Color.BLACK);
+        blocks[8] = new Block(mSize, 0xff800080, Color.BLACK);
+
         //debug
         createBlock();
     }
@@ -64,59 +67,120 @@ public class Board extends View implements GestureDetector.OnGestureListener{
     public static void createBlock(){
         Random rand = new Random();
         int random = rand.nextInt(7);
-        posX = Tetrimino.posX;
-        posY = Tetrimino.posY;
-        squares = Tetrimino.CreateTetrimino(random , posX , posY);
+        CurrentX.clear();
+        CurrentY.clear();
+        for(int i = 0; i < 4; i++){
+            CurrentX.add(5);
+            CurrentY.add(0);
+        }
+
+        squares = Tetrimino.CreateTetrimino(random , CurrentX , CurrentY);
+
+        CurrentX.clear();
+        CurrentY.clear();
+        for(int i = 4; i < 9; i++){
+            for(int j = 0; j < 4; j++){
+                if(squares[i][j] >= 1){
+                    CurrentX.add(i);
+                    CurrentY.add(j);
+                }
+            }
+        }
     }
-    public static void createBlock(int r, int posX , int posY){
-        squares = Tetrimino.CreateTetrimino(r , posX , posY);
+    public static void createBlock(int r, List<Integer> CurrentX, List<Integer> CurrentY){
+        squares = Tetrimino.MoveTetrimino(r, CurrentX, CurrentY);
+
+
+        for(int i = 4; i < 9; i++){
+            for(int j = 0; j < 4; j++){
+                if(squares[i][j] <= 1){
+                    CurrentX.add(i);
+                    CurrentY.add(j);
+                }
+            }
+        }
+    }
+    public static boolean SlideCheck(int[][] squares, int mvX){
+        for (int i = 0; i < 4; i++)
+            if (squares[CurrentX.get(i) + mvX][CurrentY.get(i)] >= 1 &&
+                    squares[CurrentX.get(i)][CurrentY.get(i)] != squares[CurrentX.get(i) + mvX][CurrentY.get(i)])
+                return false;
+
+        Log.v("test","ora");
+        for (int i = 0; i < 4; i++){
+            squares[CurrentX.get(i)][CurrentY.get(i)] = 0;
+            CurrentX.set(i , CurrentX.get(i) + mvX);
+        }
+
+            return true;
     }
 
-    public static boolean Check(int[][] squares,int mvX,int mvY){
-        if(squares[mvX + (posX - mvX)][mvY + (posY - mvY)] != 0){
+    public static boolean DownCheck(int[][] squares, int mvY){
+        try {
+            for (int i = 0; i < 4; i++)
+                if (squares[CurrentX.get(i)][CurrentY.get(i) + mvY] >= 1 &&
+                        squares[CurrentX.get(i)][CurrentY.get(i)] != squares[CurrentX.get(i)][CurrentY.get(i) + mvY])
+                    return false;
+        }catch (ArrayIndexOutOfBoundsException e){
             return false;
+        }
+        for (int i = 0; i < CurrentX.size(); i++){
+            squares[CurrentX.get(i)][CurrentY.get(i)] = 0;
+            CurrentY.set(i , CurrentY.get(i) + mvY);
         }
         return true;
     }
 
     public static void mvDownBlock(){
+        Log.v("test","down");
+        int r = squares[CurrentX.get(0)][CurrentY.get(0)];
+        try{
+            if (DownCheck(squares,1)){
+                createBlock(r,CurrentX,CurrentY);
+            }else{
+                r = 1;
+                createBlock(r,CurrentX,CurrentY);
+                createBlock();
+            }
+
+        }catch (ArrayIndexOutOfBoundsException e){
+            Log.v("test","auau");
+        }
     }
+
     public static void mvRightBlock(){
-        int r = squares[posX][posY] - 1;
+        Log.v("test","right");
+        int r = squares[CurrentX.get(0)][CurrentY.get(0)];
         try {
-            posX++;
-            if (Check(squares, posX, posY)) {
-                createBlock(r, posX, posY);
-            } else {
-                posX--;
+            if (SlideCheck(squares, 1)) {
+                createBlock(r, CurrentX, CurrentY);
+                Log.v("test","bbb");
             }
         }catch (ArrayIndexOutOfBoundsException e){
-            posX--;
-            createBlock(r,posX,posY);
+            Log.v("test","auau");
         }
-        Log.v("test","bbb");
 
     }
     public static void mvLeftBlock(){
-        int r = squares[posX][posY] - 1;
+        Log.v("test","left");
+
+        int r = squares[CurrentX.get(0)][CurrentY.get(0)] ;
         try {
-            posX--;
-            if (Check(squares, posX, posY)) {
-                createBlock(r, posX, posY);
-            } else {
-                posX++;
+            if (SlideCheck(squares, -1)) {
+                createBlock(r, CurrentX, CurrentY);
+                Log.v("test","aaa");
             }
         }catch (ArrayIndexOutOfBoundsException e){
-            posX++;
+            Log.v("test","auau");
         }
-        Log.v("test","aaa");
 
     }
     public static void fallBlock(){
 
     }
     public static void putBlock(){
-
+        Log.v("test","put");
+        createBlock(1,CurrentX,CurrentY);
     }
 
     @Override
@@ -144,13 +208,14 @@ public class Board extends View implements GestureDetector.OnGestureListener{
 
     @Override
     public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float v, float v2) {
-        Log.v("test","fff");
         return true;
     }
 
     @Override
-    public void onLongPress(MotionEvent motionEvent) {
+    public void onLongPress(MotionEvent motionEvent){
         Log.v("test","eee");
+        mvDownBlock();
+        invalidate();
     }
 
     @Override
