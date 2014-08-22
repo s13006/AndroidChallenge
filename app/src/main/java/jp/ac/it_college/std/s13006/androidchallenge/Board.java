@@ -119,7 +119,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
     }
 
     public static boolean RotateBlock(){
-        int r = squares[CurrentX.get(1)][CurrentY.get(1)];
+        int r = squares[CurrentX.get(0)][CurrentY.get(0)];
 
         try {
             switch (r) {
@@ -140,11 +140,25 @@ public class Board extends View implements GestureDetector.OnGestureListener{
                 case 6:
                 case 7:
                 case 8:
+                    int testX = 0,testY = 0;
+                    for (int i = 0; i < CurrentX.size(); i++) {
+                        if ( r == squares[CurrentX.get(i)-1][CurrentY.get(i)] &&
+                             r == squares[CurrentX.get(i)+1][CurrentY.get(i)]){
+                            testX = CurrentX.get(i);
+                            testY = CurrentY.get(i);
+                        }else if ( r == squares[CurrentX.get(i)][CurrentY.get(i)-1] &&
+                                   r == squares[CurrentX.get(i)][CurrentY.get(i)+1]){
+                            testX = CurrentX.get(i);
+                            testY = CurrentY.get(i);
+                        }
+                    }
+                    if (testX == 0 || testY == 0) return false;
+
                     int[][] temp = new int[3][3];
                     int x = 0;
                     int y = 0;
-                    for (int i = CurrentX.get(1)-1; i <= CurrentX.get(1)+1; i++){
-                        for (int j = CurrentY.get(1)-1; j <= CurrentY.get(1)+1; j++){
+                    for (int i = testY - 1; i <= testY + 1; i++){
+                        for (int j = testX - 1; j <= testX + 1; j++){
                             if (squares[i][j] == 1) return false;
                             temp[x][y] = squares[i][j];
                             y++;
@@ -153,9 +167,9 @@ public class Board extends View implements GestureDetector.OnGestureListener{
                         x++;
                     }
                     x = 0; y = 0;
-                    for (int i = CurrentX.get(1)-1; i <= CurrentX.get(1)+1; i++) {
-                        for (int j = CurrentY.get(1) - 1; j <= CurrentY.get(1) + 1; j++) {
-                            squares[i][j] = temp[2 - y][2 - x];
+                    for (int i = testY + 1; i >= testY - 1; i--) {
+                        for (int j = testX - 1; j <= testX + 1; j++) {
+                            squares[2 - j][i] = temp[x][y];
                             y++;
                         }
                         y=0;
@@ -163,15 +177,12 @@ public class Board extends View implements GestureDetector.OnGestureListener{
                     }
                     break;
             }
-            int X = CurrentX.get(0);
-            int Y = CurrentY.get(0);
+
             CurrentX.clear();
             CurrentY.clear();
-            CurrentX.add(X);
-            CurrentY.add(Y);
-            for (int i = 0; i < 10; i++) {
-                for (int j = 0; j < 20; j++) {
-                    if (CurrentX.get(0) != i && CurrentY.get(0) != j && squares[i][j] == r){
+            for (int i = 0; i < HORIZONTAL_BLOCKS; i++) {
+                for (int j = 0; j < VERTICAL_BLOCKS; j++) {
+                    if (squares[i][j] == r){
                         CurrentX.add(i);
                         CurrentY.add(j);
                     }
@@ -206,7 +217,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
 
         CurrentX.clear();
         CurrentY.clear();
-        for(int i = 4; i < 9; i++){
+        for(int i = 4; i < HORIZONTAL_BLOCKS; i++){
             for(int j = 0; j < 4; j++){
                 if(squares[i][j] == random+2){
                     CurrentX.add(i);
@@ -356,6 +367,8 @@ public class Board extends View implements GestureDetector.OnGestureListener{
     @Override
     public boolean onSingleTapUp(MotionEvent motionEvent) {
         Log.v("test","ggg");
+        RotateBlock();
+        invalidate();
 /*        if(RotateBlock()){
             int r = squares[CurrentX.get(0)][CurrentY.get(0)];
             Tetrimino.MoveTetrimino(r,CurrentX,CurrentY);
