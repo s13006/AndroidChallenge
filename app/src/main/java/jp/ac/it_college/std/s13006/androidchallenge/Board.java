@@ -26,9 +26,9 @@ public class Board extends View implements GestureDetector.OnGestureListener{
     private GestureDetector gd;
     public static List<Integer> CurrentX = new ArrayList<Integer>();
     public static List<Integer> CurrentY = new ArrayList<Integer>();
-    public static int fallspeed = 1;
     private Handler handler = new Handler();
     public static boolean gameover = true;
+    public static int score;
 
     {
         float density = getResources().getDisplayMetrics().density;
@@ -51,6 +51,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
         super(context);
         gd = new GestureDetector(context,this);
         initGame();
+        score = 0;
     }
 
     public void initGame(){
@@ -60,6 +61,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
             }
         }
         createBlock();
+        gameover = true;
         Game game = new Game();
         game.start();
     }
@@ -79,7 +81,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
                             invalidate();
                         }
                     });
-                    sleep(1000 * fallspeed);
+                    sleep(100 * difficulty.fallspeed);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -265,6 +267,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
         Log.v("test","down");
         int r = squares[CurrentX.get(0)][CurrentY.get(0)];
         try{
+            score++;
             if (DownCheck(squares,1)){
                 createBlock(r,CurrentX,CurrentY);
                 return true;
@@ -310,6 +313,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
 
     }
     public void fallBlock(){
+        score += 10;
         while (mvDownBlock());
     }
 
@@ -321,6 +325,7 @@ public class Board extends View implements GestureDetector.OnGestureListener{
                 if (squares[j][i] != 1) check = 1;
             }
             if (check == 0) {
+                score += 100;
                 for (int k = i; k > 0; k--){
                     for (int l = 0; l < Tetrimino.width; l++){
                         squares[l][k] = squares[l][k-1];
