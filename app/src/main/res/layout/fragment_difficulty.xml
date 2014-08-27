@@ -1,0 +1,33 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="jp.ac.it_college.std.s13006.androidchallenge.difficulty">
+
+
+    <Button
+        android:id="@+id/easy_Button"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/easy_Button"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        />
+
+    <Button
+        android:id="@+id/normal_Button"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/normal_Button"
+        android:layout_centerInParent="true"
+        android:layout_below="@+id/easy_Button" />
+
+    <Button
+        android:id="@+id/hard_Button"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/hard_Button"
+        android:layout_centerInParent="true"
+        android:layout_below="@+id/normal_Button"
+        />
+</RelativeLayout>
